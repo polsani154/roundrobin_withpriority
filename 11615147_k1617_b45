@@ -1,0 +1,275 @@
+#include<stdio.h>
+#include<conio.h>
+#include<malloc.h>
+int awt,atat,act,n;
+struct process
+{
+	char name[20];
+	int at,bt,bt1,ct,wt,tat,priority;
+    struct process *next;
+};
+struct process *job=NULL;
+struct process *ready=NULL;
+struct process *terminate=NULL;
+struct process *run=NULL;
+void insertinjob()
+{
+	struct process *nulk,*temp,*ptr;
+	temp=malloc(sizeof(struct process));
+		char c[20];
+		printf("enter the process name \n");
+    	scanf("%s",temp->name);
+		printf("enter the arrival time  of process  \n ");
+		scanf("%d",&temp->at);
+		printf("enter the burst time of process   \n");
+		scanf("%d",&temp->bt);	
+		printf("enter the priority of the process  \n");
+		scanf("%d",&temp->priority);
+		if(job==NULL)
+		{
+			job=temp;
+			job->bt1=job->bt;
+		}
+		else
+		{
+			temp->next=job;
+			job=temp;
+			job->bt1=job->bt;
+		}
+		
+}
+void copy(char a[20],char b[20])
+{
+	int i;
+	char temp;
+	for(i=0;i<20;i++)
+	{
+		temp=a[i];
+		a[i]=b[i];
+		b[i]=temp;
+	}
+}
+void swap(struct process *a, struct process *b)
+{
+	char tempname[20];
+int tempat,tempbt,temppri,tempbt1;
+    tempat = a->at;
+    tempbt = a->bt;
+    tempbt1=a->bt1;
+    temppri = a->priority;
+    copy(tempname,a->name);
+    a->at = b->at;
+    a->priority=b->priority;
+    a->bt=b->bt;
+    a->bt1=b->bt1;
+	copy(a->name,b->name);
+    b->at = tempat;
+    copy(b->name,tempname);
+    b->bt=tempbt;
+    b->bt1=tempbt1;
+    b->priority=temppri;
+}
+void sort(struct process *start)
+{
+    int swapped, i;
+    struct process *ptr;
+    struct process *lptr = NULL;
+    if (ptr == NULL)
+        return;
+ 
+    do
+    {
+        swapped=0;
+        ptr=start;
+ 
+        while (ptr->next!=lptr)
+        {
+            if (ptr->at>ptr->next->at)
+            { 
+                swap(ptr, ptr->next);
+                swapped = 1;
+            }
+            if(ptr->at==ptr->next->at)
+            {
+            	if(ptr->priority>ptr->next->priority)
+            	{
+                swap(ptr, ptr->next);
+                swapped = 1;	
+				}
+			}
+            ptr=ptr->next;
+        }
+        lptr=ptr;
+    }
+    while (swapped);
+}
+void display(struct process *start)
+{
+	struct process *ptr;
+	ptr=start;
+	while(ptr!=NULL)
+	{
+	    printf("%s \t", ptr->name);
+        printf("%d \t", ptr->at);
+        printf("%d \t", ptr->bt);
+        printf("%d \t", ptr->priority);
+        printf("%d \t", ptr->ct);
+        printf("%d \t", ptr->tat);
+        printf("%d \t\n", ptr->wt);
+		ptr = ptr->next;
+	}
+}
+void display1(struct process *start)
+{
+	struct process *ptr;
+	ptr=start;
+	while(ptr!=NULL)
+	{
+	    printf("%s \t", ptr->name);
+        printf("%d \t", ptr->at);
+        printf("%d \t", ptr->bt1);
+        printf("%d \t", ptr->priority);
+        printf("%d \t", ptr->ct);
+        printf("%d \t", ptr->tat);
+        printf("%d \t\n", ptr->wt);
+        act=act+ptr->ct;
+        atat=atat+ptr->tat;
+        awt=awt+ptr->wt;
+        ptr = ptr->next;
+	}
+	printf("\n Average waiting time%f",(float)awt/n);
+	printf("\n Average Turn Around time%f",(float)atat/n);
+	printf("\n Average complete time%f",(float)act/n);
+}
+void jobtoready()
+{
+		struct process *ptr,*ktr;
+		ptr=job;
+		job=job->next;
+		ptr->next=NULL;
+		ktr=ready;
+		if(ready==NULL)
+		{
+			ready=ptr;
+		}
+		else
+		{
+			while(ktr->next!=NULL)
+			{
+				ktr=ktr->next;
+			}
+			ktr->next=ptr;
+		}
+	
+}
+void readytorun()
+{
+
+		struct process *ptr,*ktr;
+		ptr=ready;
+		ktr=ready;
+		ready=ready->next;
+		ptr->next=NULL;
+        run=ptr;
+}
+void runtoready()
+{
+	struct process *ptr;
+	ptr=ready;
+	if(ready==NULL)
+	{
+		ready=run;
+		run=run->next;
+	}
+	else
+	{
+		while(ptr->next!=NULL)
+		{
+			ptr=ptr->next;
+		}
+		ptr->next=run;
+		run=run->next;
+	}
+}
+void runtoterminate(int t)
+{ 
+	struct process *ptr;
+	ptr=terminate;
+	if(terminate==NULL)
+	{
+		terminate=run;
+		terminate->ct=t;
+		terminate->tat=terminate->ct-terminate->at;
+		terminate->wt=terminate->tat-terminate->bt1;
+	}
+	else
+	{
+		while(ptr->next!=NULL)
+		{
+			ptr=ptr->next;
+		}
+		run->ct=t;
+		run->tat=run->ct-run->at;
+		run->wt=run->tat-run->bt1;
+		ptr->next=run;
+		run=run->next;
+	}
+	run=NULL;
+}
+int premt=0;
+main()
+{
+	struct process *start;
+	start=terminate;
+	printf("enter number of processes u wanna enter :\t");
+	int i;
+	scanf("%d",&n);
+    for(i=1;i<n;i++)
+    {
+    	insertinjob();
+	}
+    insertinjob(n);	
+    sort(job);
+    printf("\nprocess\tarrival\tburst\tpriority\tcomlete\tTAT\twaiting\n");
+	display(job);
+    int tq,time=0,k;
+	printf("enter time quantum");
+	scanf("%d",&tq);
+	k=tq;
+	while(job!=NULL || ready!=NULL || run!=NULL)
+      {
+	   if(job!=NULL)
+	   {
+	   	while(job!=NULL && job->at==time)
+	   	{
+	   		jobtoready();
+		}
+	   }
+	   	if(run!=NULL && k==0 && run->bt!=0)
+	   {
+	   	runtoready();
+	   	k=tq;
+		}	
+		if(run==NULL && ready!=NULL)
+		{
+            premt=premt+1;
+			readytorun();
+		}
+		
+		if(run!=NULL && run->bt!=0)
+		{
+			run->bt=run->bt-1;
+			k=k-1;
+		}
+		if(run!=NULL && run->bt==0)
+		{
+			runtoterminate(time+1);
+			run=NULL;
+			k=tq;
+		}
+		 time=time+1;
+  }   
+      display1(terminate);
+      printf("\n number of preemptions :\t%d",premt);
+	  return 0;
+  }
